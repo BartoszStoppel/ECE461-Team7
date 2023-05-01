@@ -41,5 +41,6 @@ func EnvMongoURI() string {
 	projectID := os.Getenv("GOOGLE_CLOUD_PROJECT")
 	secretName := "MONGOURI"
 	mongouri, _ := getSecret(projectID, secretName)
+	mongouri = "mongodb+srv://ece461team7_new:uQaUIvLWcMbgujtt@cluster0.a747pma.mongodb.net/?retryWrites=true&w=majority"
 	return mongouri
 }
