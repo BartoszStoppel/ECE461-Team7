@@ -19,8 +19,6 @@ function App() {
           <Route path="/package/:id" element={<PackageDetails />} />
           <Route path="/search" element={<SearchPackages />} />
           <Route path="/package/:id/rate" element={<RatePackage />} />
-          <Route path="/packages" element={<PackagesList />} />
-          
         </Routes>
       </div>
     </Router>

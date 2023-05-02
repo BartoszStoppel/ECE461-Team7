@@ -1,99 +1,90 @@
 import React, { useState } from 'react';
 import {
-  Container,
-  Typography,
-  Grid,
-  Box,
-  FormControl,
-  InputLabel,
-  OutlinedInput,
-  Button,
-  Paper,
+    Container,
+    Typography,
+    Grid,
+    Box,
+    FormControl,
+    InputLabel,
+    OutlinedInput,
+    Button,
+    Paper,
 } from '@mui/material';
 import { useForm } from 'react-hook-form';
 
-const PackageDetails = () => {
-  const { register, handleSubmit, formState: { errors } } = useForm();
-  const [response, setResponse] = useState(null);
+const RatePackage = () => {
+    const { register, handleSubmit, formState: { errors } } = useForm();
+    const [response, setResponse] = useState(null);
 
-  const onSubmit = async (formData) => {
-    console.log("Form errors:", errors);
-    console.log("Form data:", formData);
+    const onSubmit = async (formData) => {
+        console.log("Form errors:", errors);
+        console.log("Form data:", formData);
 
-    const { id } = formData;
+        const { id } = formData;
 
-    try {
-      const response = await fetch(`https://webservice-381819.uc.r.appspot.com/package/${id}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': '*/*',
-        },
-      });
+        try {
+            const response = await fetch(`http://localhost:8080/package/${id}/rate`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': '*/*',
+                    'X-Authorization': 'hello23'
+                },
+            });
 
-      if (response.ok) {
-        const responseData = await response.json();
-        console.log(responseData);
-        setResponse(responseData);
-      } else {
-        const errorMessage = await response.text();
-        console.error('Error:', errorMessage);
-      }
-    } catch (error) {
-      console.error('Error:', error);
-    }
-  };
+            if (response.ok) {
+                const responseData = await response.json();
+                console.log(responseData);
+                setResponse(responseData);
+            } else {
+                const errorMessage = await response.text();
+                console.error('Error:', errorMessage);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    };
 
-  return (
-    <Container component="main" tabIndex="0">
-      <Box mt={4} mb={4}>
-        <Typography variant="h4" component="h1" gutterBottom>
-          Package Details
-        </Typography>
-      </Box>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <Grid container spacing={2}>
-          <Grid item xs={12}>
-            <FormControl fullWidth variant="outlined">
-              <InputLabel htmlFor="id">Package ID</InputLabel>
-              <OutlinedInput
-                id="id"
-                type="text"
-                label="Package ID"
-                {...register('id', { required: true })}
-                required
-                autoFocus
-                tabIndex="0"
-                inputProps={{
-                  'aria-label': 'Package ID',
-                }}
-              />
-            </FormControl>
-          </Grid>
-          <Grid item xs={12}>
-            <Button
-              variant="contained"
-              color="primary"
-              type="submit"
-              tabIndex="0"
-              aria-label="Submit package ID"
-            >
-              Submit
-            </Button>
-          </Grid>
-        </Grid>
-      </form>
-      {response && (
-        <Box mt={4}>
-          <Paper elevation={3} sx={{ padding: 2 }}>
-            <Typography component="pre" tabIndex="0" aria-label="Package details response">
-              {JSON.stringify(response, null, 2)}
-            </Typography>
-          </Paper>
-        </Box>
-      )}
-    </Container>
-  );
+    return (
+        <Container>
+            <Box mt={4} mb={4}>
+                <Typography variant="h4" component="h1" gutterBottom>
+                    Rate Package
+                </Typography>
+            </Box>
+            <form onSubmit={handleSubmit(onSubmit)}>
+                <Grid container spacing={2}>
+                    <Grid item xs={12}>
+                        <FormControl fullWidth variant="outlined">
+                            <InputLabel htmlFor="id">Package ID</InputLabel>
+                            <OutlinedInput
+                                id="id"
+                                type="text"
+                                label="Package ID"
+                                {...register('id', { required: true })}
+                            />
+                        </FormControl>
+                    </Grid>
+                    <Grid item xs={12}>
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            type="submit"
+                        >
+                            Submit
+                        </Button>
+                    </Grid>
+                </Grid>
+            </form>
+            {response && (
+                <Box mt={4}>
+                    <Paper elevation={3} sx={{ padding: 2 }}>
+                        <pre>{JSON.stringify(response, null, 2)}</pre>
+                    </Paper>
+                </Box>
+            )}
+        </Container>
+    );
 };
 
-export default PackageDetails;
+export default RatePackage;

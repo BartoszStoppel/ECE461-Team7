@@ -20,11 +20,12 @@ func main() {
 
     // Serve the React app's static files
     // fs := CustomFileServer(http.Dir("./static/"))
-    router.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./build/static/"))))
-    router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-        http.ServeFile(w, r, "./build/index.html")
-    })
-
+    // router.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./build/static/"))))
+    // router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+    //     http.ServeFile(w, r, "./build/index.html")
+    // })
+	
+	
     port := os.Getenv("PORT")
     if port == "" {
         port = "8080"
