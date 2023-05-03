@@ -17,10 +17,10 @@ import (
 
 var GITHUB_TOKEN string
 
-func GetGithubUserToken() string{
+func GetGithubUserToken() string {
 	err := godotenv.Load()
 	if err != nil {
-	    log.Fatal("Error loading .env file")
+		log.Fatal("Error loading .env file")
 	}
 	projectID := os.Getenv("GOOGLE_CLOUD_PROJECT")
 	secretName := "GITHUB_TOKEN"
@@ -29,33 +29,38 @@ func GetGithubUserToken() string{
 }
 
 func GetSecret(projectID, secretName string) (string, error) {
-    ctx := context.Background()
-    client, err := secretmanager.NewClient(ctx, option.WithUserAgent("my-app/0.1"))
-    if err != nil {
-        return "", err
-    }
-    defer client.Close()
+	ctx := context.Background()
+	client, err := secretmanager.NewClient(ctx, option.WithUserAgent("my-app/0.1"))
+	if err != nil {
+		return "", err
+	}
+	defer client.Close()
 
-    req := &secretmanagerpb.AccessSecretVersionRequest{
-        Name: fmt.Sprintf("projects/%s/secrets/%s/versions/latest", projectID, secretName),
-    }
+	req := &secretmanagerpb.AccessSecretVersionRequest{
+		Name: fmt.Sprintf("projects/%s/secrets/%s/versions/latest", projectID, secretName),
+	}
 
-    result, err := client.AccessSecretVersion(ctx, req)
-    if err != nil {
-        return "", err
-    }
+	result, err := client.AccessSecretVersion(ctx, req)
+	if err != nil {
+		return "", err
+	}
 
-    return string(result.Payload.Data), nil
+	return string(result.Payload.Data), nil
 }
 
 func EnvMongoURI() string {
 	err := godotenv.Load()
 	if err != nil {
-	    log.Fatal("Error loading .env file")
+		log.Fatal("Error loading .env file")
 	}
 	projectID := os.Getenv("GOOGLE_CLOUD_PROJECT")
 	secretName := "MONGOURI"
 	mongouri, _ := GetSecret(projectID, secretName)
+
+	// if mongouri does not exist, get from environment variable
+	if mongouri == "" {
+		mongouri = os.Getenv("MONGOURI")
+	}
 
 	return mongouri
 }

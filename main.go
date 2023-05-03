@@ -7,6 +7,7 @@ import (
 	// "io/ioutil"
 	"net/http"
 	"os"
+
 	// "path"
 	// "strings"
 
@@ -15,24 +16,47 @@ import (
 )
 
 func main() {
-    // Run database
-    configs.ConnectDB()
-    templog.Printf("Server started")
-    router := sw.NewRouter()
 
-    // Serve the React app's static files
-    // fs := CustomFileServer(http.Dir("./static/"))
-    router.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./build/static/"))))
-    router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-        http.ServeFile(w, r, "./build/index.html")
-    })
+	// Run database
+	configs.ConnectDB()
+	templog.Printf("Server started")
+	router := sw.NewRouter()
 
-    port := os.Getenv("PORT")
-    if port == "" {
-        port = "8080"
-    }
+	// Serve the React app's static files
+	// fs := CustomFileServer(http.Dir("./static/"))
+	router.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./build/static/"))))
+	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./build/index.html")
+	})
 
-    templog.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", port), CORSHandler(router)))
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+
+	templog.Println("Starting server on port", port)
+	if err := http.ListenAndServe(fmt.Sprintf(":%s", port), CORSHandler(router)); err != nil {
+		panic(err)
+	}
+
+	// // Start the first server listening on port 8080
+	// go func() {
+	// 	templog.Println("Starting server on port", port)
+	// 	if err := http.ListenAndServe(fmt.Sprintf(":%s", port), CORSHandler(router)); err != nil {
+	// 		panic(err)
+	// 	}
+	// }()
+
+	// // Start the second server listening on port 3000
+	// go func() {
+	// 	templog.Println("Starting server on port 3000")
+	// 	if err := http.ListenAndServe(":3000", CORSHandler(router)); err != nil {
+	// 		panic(err)
+	// 	}
+	// }()
+
+	// // Wait for a signal to exit
+	// select {}
 }
 
 func CORSHandler(h http.Handler) http.Handler {
