@@ -1,8 +1,6 @@
----
 openapi: 3.0.2
 info:
   title: ECE 461 - Spring 2023 - Project 2
-  version: 2.3.5
   description: "API for ECE 461/Spring 2023/Project 2: A Trustworthy Module Registry"
   termsOfService: http://swagger.io/terms/
   contact:
@@ -12,9 +10,39 @@ info:
   license:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0.html
+  version: 2.3.5
+servers:
+- url: /
 paths:
   /packages:
     post:
+      summary: Get the packages from the registry.
+      description: |-
+        Get any packages fitting the query.
+        Search for packages satisfying the indicated query.
+
+        If you want to enumerate all packages, provide an array with a single PackageQuery whose name is "*".
+
+        The response is paginated; the response header includes the offset to use in the next query.
+      operationId: PackagesList
+      parameters:
+      - name: X-Authorization
+        in: header
+        description: ""
+        required: true
+        style: simple
+        explode: false
+        schema:
+          $ref: '#/components/schemas/AuthenticationToken'
+      - name: offset
+        in: query
+        description: "Provide this for pagination. If not provided, returns the first\
+          \ page of results."
+        required: false
+        style: form
+        explode: true
+        schema:
+          $ref: '#/components/schemas/EnumerateOffset'
       requestBody:
         content:
           application/json:
@@ -23,18 +51,13 @@ paths:
               items:
                 $ref: '#/components/schemas/PackageQuery'
         required: true
-      parameters:
-      - name: offset
-        description: "Provide this for pagination. If not provided, returns the first\
-          \ page of results."
-        schema:
-          $ref: '#/components/schemas/EnumerateOffset'
-        in: query
-        required: false
       responses:
         "200":
+          description: List of packages
           headers:
             offset:
+              style: simple
+              explode: false
               schema:
                 $ref: '#/components/schemas/EnumerateOffset'
               examples:
@@ -46,6 +69,7 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/PackageMetadata'
+                x-content-type: application/json
               examples:
                 ExampleResponse:
                   value:
@@ -58,30 +82,25 @@ paths:
                   - Version: ^1.2.3
                     Name: React
                     ID: react
-          description: List of packages
         "400":
           description: "There is missing field(s) in the PackageQuery/AuthenticationToken\
             \ or it is formed improperly, or the AuthenticationToken is invalid."
         "413":
           description: Too many packages returned.
-      operationId: PackagesList
-      summary: Get the packages from the registry.
-      description: |-
-        Get any packages fitting the query.
-        Search for packages satisfying the indicated query.
-
-        If you want to enumerate all packages, provide an array with a single PackageQuery whose name is "*".
-
-        The response is paginated; the response header includes the offset to use in the next query.
-    parameters:
-    - name: X-Authorization
-      description: ""
-      schema:
-        $ref: '#/components/schemas/AuthenticationToken'
-      in: header
-      required: true
   /reset:
     delete:
+      summary: Reset the registry
+      description: Reset the registry to a system default state.
+      operationId: RegistryReset
+      parameters:
+      - name: X-Authorization
+        in: header
+        description: ""
+        required: true
+        style: simple
+        explode: false
+        schema:
+          $ref: '#/components/schemas/AuthenticationToken'
       responses:
         "200":
           description: Registry is reset.
@@ -90,27 +109,34 @@ paths:
             \ is formed improperly, or the AuthenticationToken is invalid."
         "401":
           description: You do not have permission to reset the registry.
-      operationId: RegistryReset
-      summary: Reset the registry
-      description: Reset the registry to a system default state.
-    parameters:
-    - name: X-Authorization
-      description: ""
-      schema:
-        $ref: '#/components/schemas/AuthenticationToken'
-      in: header
-      required: true
   /package/{id}:
     get:
+      summary: Interact with the package with this ID
+      description: Return this package.
+      operationId: PackageRetrieve
       parameters:
+      - name: X-Authorization
+        in: header
+        description: ""
+        required: true
+        style: simple
+        explode: false
+        schema:
+          $ref: '#/components/schemas/AuthenticationToken'
+        examples:
+          ExampleToken:
+            value: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
       - name: id
+        in: path
         description: ID of package to fetch
+        required: true
+        style: simple
+        explode: false
         schema:
           $ref: '#/components/schemas/PackageID'
-        in: path
-        required: true
       responses:
         "200":
+          description: Return the package. Content is required.
           content:
             application/json:
               schema:
@@ -149,28 +175,43 @@ paths:
                         console.log('Failed')
                         process.exit(1)
                         }
-          description: Return the package. Content is required.
         "400":
           description: "There is missing field(s) in the PackageID/AuthenticationToken\
             \ or it is formed improperly, or the AuthenticationToken is invalid."
         "404":
           description: Package does not exist.
-      operationId: PackageRetrieve
-      summary: Interact with the package with this ID
-      description: Return this package.
     put:
+      summary: Update this content of the package.
+      description: |-
+        The name, version, and ID must match.
+
+        The package contents (from PackageData) will replace the previous contents.
+      operationId: PackageUpdate
+      parameters:
+      - name: X-Authorization
+        in: header
+        description: ""
+        required: true
+        style: simple
+        explode: false
+        schema:
+          $ref: '#/components/schemas/AuthenticationToken'
+        examples:
+          ExampleToken:
+            value: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+      - name: id
+        in: path
+        description: ""
+        required: true
+        style: simple
+        explode: false
+        schema:
+          $ref: '#/components/schemas/PackageID'
       requestBody:
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/Package'
-        required: true
-      parameters:
-      - name: id
-        description: ""
-        schema:
-          $ref: '#/components/schemas/PackageID'
-        in: path
         required: true
       responses:
         "200":
@@ -180,20 +221,29 @@ paths:
             \ or it is formed improperly, or the AuthenticationToken is invalid."
         "404":
           description: Package does not exist.
-      operationId: PackageUpdate
-      summary: Update this content of the package.
-      description: |-
-        The name, version, and ID must match.
-
-        The package contents (from PackageData) will replace the previous contents.
     delete:
+      summary: Delete this version of the package.
+      operationId: PackageDelete
       parameters:
+      - name: X-Authorization
+        in: header
+        description: ""
+        required: true
+        style: simple
+        explode: false
+        schema:
+          $ref: '#/components/schemas/AuthenticationToken'
+        examples:
+          ExampleToken:
+            value: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
       - name: id
+        in: path
         description: Package ID
+        required: true
+        style: simple
+        explode: false
         schema:
           $ref: '#/components/schemas/PackageID'
-        in: path
-        required: true
       responses:
         "200":
           description: Package is deleted.
@@ -202,29 +252,18 @@ paths:
             \ or it is formed improperly, or the AuthenticationToken is invalid."
         "404":
           description: Package does not exist.
-      operationId: PackageDelete
-      summary: Delete this version of the package.
-    parameters:
-    - examples:
-        ExampleID:
-          value: underscore
-      name: id
-      description: Package ID
-      schema:
-        $ref: '#/components/schemas/PackageID'
-      in: path
-      required: true
-    - examples:
-        ExampleToken:
-          value: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
-      name: X-Authorization
-      description: ""
-      schema:
-        $ref: '#/components/schemas/AuthenticationToken'
-      in: header
-      required: true
   /package:
     post:
+      operationId: PackageCreate
+      parameters:
+      - name: X-Authorization
+        in: header
+        description: ""
+        required: true
+        style: simple
+        explode: false
+        schema:
+          $ref: '#/components/schemas/AuthenticationToken'
       requestBody:
         content:
           application/json:
@@ -256,6 +295,8 @@ paths:
         required: true
       responses:
         "201":
+          description: Success. Check the ID in the returned metadata for the official
+            ID.
           content:
             application/json:
               schema:
@@ -277,8 +318,6 @@ paths:
                         console.log('Failed')
                         process.exit(1)
                         }
-          description: Success. Check the ID in the returned metadata for the official
-            ID.
         "400":
           description: "There is missing field(s) in the PackageData/AuthenticationToken\
             \ or it is formed improperly (e.g. Content and URL are both set), or the\
@@ -287,24 +326,33 @@ paths:
           description: Package exists already.
         "424":
           description: Package is not uploaded due to the disqualified rating.
-      operationId: PackageCreate
-    parameters:
-    - name: X-Authorization
-      description: ""
-      schema:
-        $ref: '#/components/schemas/AuthenticationToken'
-      in: header
-      required: true
   /package/{id}/rate:
     get:
+      operationId: PackageRate
+      parameters:
+      - name: id
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          $ref: '#/components/schemas/PackageID'
+      - name: X-Authorization
+        in: header
+        description: ""
+        required: true
+        style: simple
+        explode: false
+        schema:
+          $ref: '#/components/schemas/AuthenticationToken'
       responses:
         "200":
+          description: Return the rating. Only use this if each metric was computed
+            successfully.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/PackageRating'
-          description: Return the rating. Only use this if each metric was computed
-            successfully.
         "400":
           description: "There is missing field(s) in the PackageID/AuthenticationToken\
             \ or it is formed improperly, or the AuthenticationToken is invalid."
@@ -312,19 +360,6 @@ paths:
           description: Package does not exist.
         "500":
           description: The package rating system choked on at least one of the metrics.
-      operationId: PackageRate
-    parameters:
-    - name: id
-      schema:
-        $ref: '#/components/schemas/PackageID'
-      in: path
-      required: true
-    - name: X-Authorization
-      description: ""
-      schema:
-        $ref: '#/components/schemas/AuthenticationToken'
-      in: header
-      required: true
   /authenticate:
     summary: Authenticate this user -- get an access token.
     description: |-
@@ -335,6 +370,8 @@ paths:
 
       Otherwise, this endpoint should return HTTP 501 "Not implemented", and the "X-Authorization" header should be unused for the other endpoints.
     put:
+      description: Create an access token.
+      operationId: CreateAuthToken
       requestBody:
         content:
           application/json:
@@ -347,10 +384,12 @@ paths:
                     name: ece30861defaultadminuser
                     isAdmin: true
                   Secret:
-                    password: correcthorsebatterystaple123(!__+@**(A'"`;DROP TABLE packages;
+                    password: correcthorsebatterystaple123(!__+@**(A'"`;DROP TABLE
+                      packages;
         required: true
       responses:
         "200":
+          description: Return an AuthenticationToken.
           content:
             application/json:
               schema:
@@ -358,7 +397,6 @@ paths:
               examples:
                 ExampleResponse:
                   value: '"bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"'
-          description: Return an AuthenticationToken.
         "400":
           description: There is missing field(s) in the AuthenticationRequest or it
             is formed improperly.
@@ -366,35 +404,49 @@ paths:
           description: The user or password is invalid.
         "501":
           description: This system does not support authentication.
-      operationId: CreateAuthToken
-      description: Create an access token.
   /package/byName/{name}:
     get:
+      description: Return the history of this package (all versions).
+      operationId: PackageByNameGet
       parameters:
-      - examples:
-          ExampleToken:
-            value: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
-        name: X-Authorization
+      - name: name
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          $ref: '#/components/schemas/PackageName'
+        examples:
+          ExampleName:
+            value: Underscore
+      - name: X-Authorization
+        in: header
         description: ""
+        required: true
+        style: simple
+        explode: false
         schema:
           $ref: '#/components/schemas/AuthenticationToken'
-        in: header
-        required: true
+        examples:
+          ExampleToken:
+            value: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
       responses:
         "200":
+          description: Return the package history.
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: '#/components/schemas/PackageHistoryEntry'
+                x-content-type: application/json
               examples:
                 zaza:
                   value:
                   - User:
                       name: James Davis
                       isAdmin: true
-                    Date: 2023-03-23T23:11:15Z
+                    Date: 2023-03-23T23:11:15.000Z
                     PackageMetadata:
                       Name: Underscore
                       Version: 1.0.0
@@ -403,7 +455,7 @@ paths:
                   - User:
                       name: James Davis
                       isAdmin: true
-                    Date: 2023-03-22T23:06:25Z
+                    Date: 2023-03-22T23:06:25.000Z
                     PackageMetadata:
                       Name: Underscore
                       Version: 1.0.0
@@ -412,7 +464,7 @@ paths:
                   - User:
                       name: James Davis
                       isAdmin: true
-                    Date: 2023-03-21T22:59:40Z
+                    Date: 2023-03-21T22:59:40.000Z
                     PackageMetadata:
                       Name: Underscore
                       Version: 1.0.0
@@ -421,27 +473,39 @@ paths:
                   - User:
                       name: James Davis
                       isAdmin: true
-                    Date: 2023-03-20T22:45:31Z
+                    Date: 2023-03-20T22:45:31.000Z
                     PackageMetadata:
                       Name: Underscore
                       Version: 1.0.0
                       ID: underscore
                     Action: CREATE
-          description: Return the package history.
         "400":
           description: "There is missing field(s) in the PackageName/AuthenticationToken\
             \ or it is formed improperly, or the AuthenticationToken is invalid."
         "404":
           description: No such package.
-      operationId: PackageByNameGet
-      description: Return the history of this package (all versions).
     delete:
+      summary: Delete all versions of this package.
+      operationId: PackageByNameDelete
       parameters:
-      - name: name
+      - name: X-Authorization
+        in: header
+        description: ""
+        required: true
+        style: simple
+        explode: false
         schema:
-          $ref: '#/components/schemas/PackageName'
+          $ref: '#/components/schemas/AuthenticationToken'
+        examples:
+          ExampleToken:
+            value: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+      - name: name
         in: path
         required: true
+        style: simple
+        explode: false
+        schema:
+          $ref: '#/components/schemas/PackageName'
       responses:
         "200":
           description: Package is deleted.
@@ -450,28 +514,24 @@ paths:
             \ or it is formed improperly, or the AuthenticationToken is invalid."
         "404":
           description: Package does not exist.
-      operationId: PackageByNameDelete
-      summary: Delete all versions of this package.
-    parameters:
-    - examples:
-        ExampleName:
-          value: Underscore
-      name: name
-      schema:
-        $ref: '#/components/schemas/PackageName'
-      in: path
-      required: true
-    - examples:
-        ExampleToken:
-          value: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
-      name: X-Authorization
-      description: ""
-      schema:
-        $ref: '#/components/schemas/AuthenticationToken'
-      in: header
-      required: true
   /package/byRegEx:
     post:
+      summary: Get any packages fitting the regular expression.
+      description: Search for a package using regular expression over package names
+        and READMEs. This is similar to search by name.
+      operationId: PackageByRegExGet
+      parameters:
+      - name: X-Authorization
+        in: header
+        description: ""
+        required: true
+        style: simple
+        explode: false
+        schema:
+          $ref: '#/components/schemas/AuthenticationToken'
+        examples:
+          ExampleToken:
+            value: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
       requestBody:
         content:
           application/json:
@@ -484,12 +544,14 @@ paths:
         required: true
       responses:
         "200":
+          description: Return a list of packages.
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: '#/components/schemas/PackageMetadata'
+                x-content-type: application/json
               examples:
                 ExampleResponse:
                   value:
@@ -499,248 +561,260 @@ paths:
                     Name: Lodash
                   - Version: ^1.2.3
                     Name: React
-          description: Return a list of packages.
         "400":
           description: "There is missing field(s) in the PackageRegEx/AuthenticationToken\
             \ or it is formed improperly, or the AuthenticationToken is invalid."
         "404":
           description: No package found under this regex.
-      operationId: PackageByRegExGet
-      summary: Get any packages fitting the regular expression.
-      description: Search for a package using regular expression over package names
-        and READMEs. This is similar to search by name.
-    parameters:
-    - examples:
-        ExampleToken:
-          value: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
-      name: X-Authorization
-      description: ""
-      schema:
-        $ref: '#/components/schemas/AuthenticationToken'
-      in: header
-      required: true
 components:
   schemas:
     Package:
       required:
-      - metadata
       - data
+      - metadata
       type: object
       properties:
         metadata:
           $ref: '#/components/schemas/PackageMetadata'
-          description: ""
         data:
           $ref: '#/components/schemas/PackageData'
-          description: ""
+      example:
+        metadata:
+          Version: 1.2.3
+          ID: ID
+          Name: Name
+        data:
+          Content: Content
+          JSProgram: JSProgram
+          URL: URL
     PackageMetadata:
-      description: |-
-        The "Name" and "Version" are used as a unique identifier pair when uploading a package.
-
-        The "ID" is used as an internal identifier for interacting with existing packages.
       required:
+      - ID
       - Name
       - Version
-      - ID
       type: object
       properties:
         Name:
           $ref: '#/components/schemas/PackageName'
-          description: Package name
-          example: my-package
         Version:
-          description: Package version
           type: string
+          description: Package version
           example: 1.2.3
         ID:
           $ref: '#/components/schemas/PackageID'
-          description: "Unique ID for use with the /package/{id} endpoint."
-          example: "123567192081501"
-    PackageData:
       description: |-
-        This is a "union" type.
-        - On package upload, either Content or URL should be set. If both are set, returns 400.
-        - On package update, exactly one field should be set.
-        - On download, the Content field should be set.
+        The "Name" and "Version" are used as a unique identifier pair when uploading a package.
+
+        The "ID" is used as an internal identifier for interacting with existing packages.
+      example:
+        Version: 1.2.3
+        ID: ID
+        Name: Name
+    PackageData:
       type: object
       properties:
         Content:
+          type: string
           description: |-
             Package contents. This is the zip file uploaded by the user. (Encoded as text using a Base64 encoding).
 
             This will be a zipped version of an npm package's GitHub repository, minus the ".git/" directory." It will, for example, include the "package.json" file that can be used to retrieve the project homepage.
 
             See https://docs.npmjs.com/cli/v7/configuring-npm/package-json#homepage.
-          type: string
         URL:
+          type: string
           description: Package URL (for use in public ingest).
-          type: string
         JSProgram:
-          description: A JavaScript program (for use with sensitive modules).
           type: string
+          description: A JavaScript program (for use with sensitive modules).
+      description: |-
+        This is a "union" type.
+        - On package upload, either Content or URL should be set. If both are set, returns 400.
+        - On package update, exactly one field should be set.
+        - On download, the Content field should be set.
+      example:
+        Content: Content
+        JSProgram: JSProgram
+        URL: URL
     User:
-      description: ""
       required:
-      - name
       - isAdmin
+      - name
       type: object
       properties:
         name:
-          description: ""
           type: string
+          description: ""
           example: Alfalfa
         isAdmin:
-          description: Is this user an admin?
           type: boolean
+          description: Is this user an admin?
+      description: ""
+      example:
+        name: Alfalfa
+        isAdmin: true
     UserAuthenticationInfo:
-      description: Authentication info for a user
       required:
       - password
       type: object
       properties:
         password:
+          type: string
           description: "Password for a user. Per the spec, this should be a \"strong\"\
             \ password."
-          type: string
+      description: Authentication info for a user
     PackageID:
-      description: ""
       type: string
+      description: ""
     PackageRating:
-      description: |-
-        Package rating (cf. Project 1).
-
-        If the Project 1 that you inherited does not support one or more of the original properties, denote this with the value "-1".
       required:
-      - RampUp
-      - Correctness
       - BusFactor
-      - ResponsiveMaintainer
-      - LicenseScore
+      - Correctness
       - GoodPinningPractice
-      - PullRequest
+      - LicenseScore
       - NetScore
+      - PullRequest
+      - RampUp
+      - ResponsiveMaintainer
       type: object
       properties:
         BusFactor:
-          format: double
-          description: ""
           type: number
+          description: ""
+          format: double
         Correctness:
-          format: double
-          description: ""
           type: number
+          description: ""
+          format: double
         RampUp:
-          format: double
-          description: ""
           type: number
+          description: ""
+          format: double
         ResponsiveMaintainer:
-          format: double
-          description: ""
           type: number
+          description: ""
+          format: double
         LicenseScore:
-          format: double
-          description: ""
           type: number
-        GoodPinningPractice:
+          description: ""
           format: double
+        GoodPinningPractice:
+          type: number
           description: "The fraction of its dependencies that are pinned to at least\
             \ a specific major+minor version, e.g. version 2.3.X of a package. (If\
             \ there are zero dependencies, they should receive a 1.0 rating. If there\
             \ are two dependencies, one pinned to this degree, then they should receive\
             \ a Â½ = 0.5 rating)."
-          type: number
-        PullRequest:
           format: double
+        PullRequest:
+          type: number
           description: The fraction of project code that was introduced through pull
             requests with a code review.
-          type: number
-        NetScore:
           format: double
-          description: Scores calculated from other seven metrics.
+        NetScore:
           type: number
+          description: Scores calculated from other seven metrics.
+          format: double
+      description: |-
+        Package rating (cf. Project 1).
+
+        If the Project 1 that you inherited does not support one or more of the original properties, denote this with the value "-1".
+      example:
+        GoodPinningPractice: 2.3021358869347655
+        NetScore: 9.301444243932576
+        PullRequest: 7.061401241503109
+        ResponsiveMaintainer: 5.962133916683182
+        LicenseScore: 5.637376656633329
+        RampUp: 1.4658129805029452
+        BusFactor: 0.8008281904610115
+        Correctness: 6.027456183070403
     PackageHistoryEntry:
-      description: One entry of the history of this package.
       required:
-      - User
+      - Action
       - Date
       - PackageMetadata
-      - Action
+      - User
       type: object
       properties:
         User:
           $ref: '#/components/schemas/User'
-          description: ""
         Date:
-          format: date-time
-          description: Date of activity using ISO-8601 Datetime standard in UTC format.
           type: string
+          description: Date of activity using ISO-8601 Datetime standard in UTC format.
+          format: date-time
           example: 2023-03-23T23:11:15Z
         PackageMetadata:
           $ref: '#/components/schemas/PackageMetadata'
-          description: ""
         Action:
+          type: string
           description: ""
           enum:
           - CREATE
           - UPDATE
           - DOWNLOAD
           - RATE
-          type: string
+      description: One entry of the history of this package.
+      example:
+        Action: CREATE
+        User:
+          name: Alfalfa
+          isAdmin: true
+        PackageMetadata:
+          Version: 1.2.3
+          ID: ID
+          Name: Name
+        Date: 2023-03-23T23:11:15Z
     PackageName:
+      type: string
       description: |-
         Name of a package.
 
         - Names should only use typical "keyboard" characters.
         - The name "*" is reserved. See the `/packages` API for its meaning.
-      type: string
     AuthenticationToken:
+      type: string
       description: "The spec permits you to use any token format you like. You could,\
         \ for example, look into JSON Web Tokens (\"JWT\", pronounced \"jots\"): https://jwt.io."
-      type: string
     AuthenticationRequest:
-      description: ""
       required:
-      - User
       - Secret
+      - User
       type: object
       properties:
         User:
           $ref: '#/components/schemas/User'
-          description: ""
         Secret:
           $ref: '#/components/schemas/UserAuthenticationInfo'
-          description: ""
-    SemverRange:
       description: ""
+    SemverRange:
       type: string
+      description: ""
       example: |-
         Exact (1.2.3)
         Bounded range (1.2.3-2.1.0)
         Carat (^1.2.3)
         Tilde (~1.2.0)
     PackageQuery:
-      description: ""
       required:
       - Name
       type: object
       properties:
         Version:
           $ref: '#/components/schemas/SemverRange'
-          description: ""
         Name:
           $ref: '#/components/schemas/PackageName'
-          description: ""
+      description: ""
     EnumerateOffset:
-      description: Offset in pagination.
       type: string
+      description: Offset in pagination.
       example: "1"
     PackageRegEx:
-      description: ""
       required:
       - RegEx
       type: object
       properties:
         RegEx:
+          type: string
           description: A regular expression over package names and READMEs that is
             used for searching for a package
-          type: string
+      description: ""
