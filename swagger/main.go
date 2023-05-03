@@ -20,7 +20,6 @@ import (
 	//
 	//    sw "github.com/myname/myrepo/go"
 	//
-	// old: sw "./go"
 	sw "ECE461-Team1-Repository/swagger/go"
 )
 
@@ -29,5 +28,5 @@ func main() {
 
 	router := sw.NewRouter()
 
-	log.Fatal(http.ListenAndServe(":3000", router))
+	log.Fatal(http.ListenAndServe(":8081", router))
 }

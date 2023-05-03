@@ -51,84 +51,84 @@ var routes = Routes{
 	Route{
 		"Index",
 		"GET",
-		"/",
+		"/BSTOPPEL/ece-461_spring_2023_project_2/2.3.5/",
 		Index,
 	},
 
 	Route{
 		"CreateAuthToken",
 		strings.ToUpper("Put"),
-		"/authenticate",
+		"/BSTOPPEL/ece-461_spring_2023_project_2/2.3.5/authenticate",
 		CreateAuthToken,
 	},
 
 	Route{
 		"PackageByNameDelete",
 		strings.ToUpper("Delete"),
-		"/package/byName/{name}",
+		"/BSTOPPEL/ece-461_spring_2023_project_2/2.3.5/package/byName/{name}",
 		PackageByNameDelete,
 	},
 
 	Route{
 		"PackageByNameGet",
 		strings.ToUpper("Get"),
-		"/package/byName/{name}",
+		"/BSTOPPEL/ece-461_spring_2023_project_2/2.3.5/package/byName/{name}",
 		PackageByNameGet,
 	},
 
 	Route{
 		"PackageByRegExGet",
 		strings.ToUpper("Post"),
-		"/package/byRegEx",
+		"/BSTOPPEL/ece-461_spring_2023_project_2/2.3.5/package/byRegEx",
 		PackageByRegExGet,
 	},
 
 	Route{
 		"PackageCreate",
 		strings.ToUpper("Post"),
-		"/package",
+		"/BSTOPPEL/ece-461_spring_2023_project_2/2.3.5/package",
 		PackageCreate,
 	},
 
 	Route{
 		"PackageDelete",
 		strings.ToUpper("Delete"),
-		"/package/{id}",
+		"/BSTOPPEL/ece-461_spring_2023_project_2/2.3.5/package/{id}",
 		PackageDelete,
 	},
 
 	Route{
 		"PackageRate",
 		strings.ToUpper("Get"),
-		"/package/{id}/rate",
+		"/BSTOPPEL/ece-461_spring_2023_project_2/2.3.5/package/{id}/rate",
 		PackageRate,
 	},
 
 	Route{
 		"PackageRetrieve",
 		strings.ToUpper("Get"),
-		"/package/{id}",
+		"/BSTOPPEL/ece-461_spring_2023_project_2/2.3.5/package/{id}",
 		PackageRetrieve,
 	},
 
 	Route{
 		"PackageUpdate",
 		strings.ToUpper("Put"),
-		"/package/{id}",
+		"/BSTOPPEL/ece-461_spring_2023_project_2/2.3.5/package/{id}",
 		PackageUpdate,
 	},
 
 	Route{
 		"PackagesList",
 		strings.ToUpper("Post"),
-		"/packages",
+		"/BSTOPPEL/ece-461_spring_2023_project_2/2.3.5/packages",
 		PackagesList,
 	},
 
 	Route{
 		"RegistryReset",
 		strings.ToUpper("Delete"),
-		"/reset",
+		"/BSTOPPEL/ece-461_spring_2023_project_2/2.3.5/reset",
 		RegistryReset,
 	},
 }
